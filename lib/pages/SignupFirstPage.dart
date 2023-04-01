@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:test/modals/User.dart';
 import 'package:wc_form_validators/wc_form_validators.dart';
-
 import '../utils/colors.dart';
-import '../utils/globalMethods.dart';
 import 'ButtonWidget.dart';
 
 class SignupFirstPage extends StatefulWidget {
   final Function(bool) isUpdated;
-  const SignupFirstPage({super.key, required this.isUpdated});
+  final User user;
+  const SignupFirstPage(
+      {super.key, required this.isUpdated, required this.user});
 
   @override
   State<SignupFirstPage> createState() => _SignupFirstPageState();
@@ -15,51 +16,9 @@ class SignupFirstPage extends StatefulWidget {
 
 class _SignupFirstPageState extends State<SignupFirstPage> {
   bool updated = false;
-  String _gender = "male";
-  String _chosenValue = 'Once a week';
   var _formKey = GlobalKey<FormState>();
-  String _email = '';
-  bool _emailFilled = false;
-  bool _isNextButtonDisabled = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _isNextButtonDisabled = true;
-  }
-
-  void setGender(value) {
-    setState(() {
-      _gender = value;
-    });
-  }
-
-  void setChosenValue(value) {
-    setState(() {
-      _chosenValue = value;
-    });
-  }
-
-  void setEmail(value) {
-    if (value.isEmpty ||
-        !RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$")
-            .hasMatch(value)) {
-      setState(() {
-        _emailFilled = false;
-      });
-    } else {
-      setState(() {
-        _email = value;
-        _emailFilled = true;
-        _isNextButtonDisabled = false;
-      });
-    }
-  }
-
   void onNextClick() {
-    if (_emailFilled) {
-      widget.isUpdated(true);
-    }
+    widget.isUpdated(true);
   }
 
   @override
@@ -100,13 +59,18 @@ class _SignupFirstPageState extends State<SignupFirstPage> {
                   hintText: 'email',
                 ),
                 keyboardType: TextInputType.emailAddress,
-                onChanged: setEmail,
+                onSaved: (value) {
+                  setState(() {
+                    widget.user.email = value!;
+                  });
+                },
                 textInputAction: TextInputAction.next,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: Validators.compose([
                   Validators.required('Email is required'),
                   Validators.email('Enter valid email'),
                 ]),
+                initialValue: widget.user.email,
               ),
               SizedBox(
                 height: 15,
@@ -120,13 +84,36 @@ class _SignupFirstPageState extends State<SignupFirstPage> {
               ),
               Row(
                 children: [
-                  Expanded(
-                    child: ListTileMethod("Male", "male"),
+                  Text('Male'),
+                  Radio(
+                    value: 'Male',
+                    groupValue: widget.user.gender,
+                    onChanged: (value) {
+                      setState(() {
+                        widget.user.gender = value!;
+                      });
+                    },
                   ),
-                  Expanded(
-                    child: ListTileMethod("Female", "female"),
+                  Text('Female'),
+                  Radio(
+                    value: 'Female',
+                    groupValue: widget.user.gender,
+                    onChanged: (value) {
+                      setState(() {
+                        widget.user.gender = value!;
+                      });
+                    },
                   ),
-                  Expanded(child: ListTileMethod("N/A", "na")),
+                  Text('N/A'),
+                  Radio(
+                    value: 'NA',
+                    groupValue: widget.user.gender,
+                    onChanged: (value) {
+                      setState(() {
+                        widget.user.gender = value!;
+                      });
+                    },
+                  ),
                 ],
               ),
               SizedBox(
@@ -162,41 +149,38 @@ class _SignupFirstPageState extends State<SignupFirstPage> {
                       child: Text(value),
                     );
                   }).toList(),
-                  onChanged: setChosenValue,
-                  value: _chosenValue,
+                  onChanged: (value) {
+                    setState(() {
+                      widget.user.chosenValue = value!;
+                    });
+                  },
+                  value: widget.user.chosenValue,
                 ),
-              ),
-              SizedBox(
-                height: 12,
-              ),
-              errorMessage(_emailFilled, ' Valid Email')
+              )
             ],
           ),
         ),
-        Column(children: [
-          ButtonWidget(
-            color: primaryColor,
-            onPressed: _isNextButtonDisabled ? () {} : onNextClick,
-            title: 'NEXT',
-            width: 400,
-          ),
-          SizedBox(
-            height: 20,
-          )
-        ]),
+        Column(
+          children: [
+            Center(
+              child: ButtonWidget(
+                color: primaryColor,
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    onNextClick();
+                  }
+                },
+                title: 'NEXT',
+                width: MediaQuery.of(context).size.width * 0.9,
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            )
+          ],
+        ),
       ],
-    );
-  }
-
-  ListTile ListTileMethod(String title, String value) {
-    return ListTile(
-      contentPadding: const EdgeInsets.all(0),
-      title: Text(title),
-      leading: Radio(
-        value: value,
-        groupValue: _gender,
-        onChanged: setGender,
-      ),
     );
   }
 }

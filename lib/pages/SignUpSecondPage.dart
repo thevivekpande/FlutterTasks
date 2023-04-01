@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:test/modals/User.dart';
 import 'package:test/pages/login.dart';
 import 'package:wc_form_validators/wc_form_validators.dart';
 
@@ -9,7 +10,11 @@ import '../utils/globalMethods.dart';
 import 'ButtonWidget.dart';
 
 class SignUpSecondPage extends StatefulWidget {
-  const SignUpSecondPage({super.key});
+  final User user;
+  const SignUpSecondPage({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<SignUpSecondPage> createState() => _SignUpSecondPageState();
@@ -19,17 +24,22 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
   var _formKey = GlobalKey<FormState>();
   bool _isObscurePass = true;
   bool _isObscureConfirmPass = true;
-  String _passWord = '';
-  String _confirmPassWord = '';
   bool _isPassEquals = false;
   bool _isMinLen = false;
   bool _isUpperCase = false;
   bool _isNumber = false;
   bool _isLowerCase = false;
 
+  @override
+  void initState() {
+    super.initState();
+    validatePassword(widget.user.password);
+    validateConfirmPassword(widget.user.confirmPassword);
+  }
+
   void validatePassword(value) {
     setState(() {
-      _passWord = value;
+      widget.user.password = value;
     });
 
     bool isPassEqualFlag = false;
@@ -59,7 +69,8 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
     }
 
     // validate for equal password
-    if (_confirmPassWord == _passWord && _passWord != '') {
+    if (widget.user.confirmPassword == widget.user.password &&
+        widget.user.password != '') {
       isPassEqualFlag = true;
     }
 
@@ -74,11 +85,12 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
 
   void validateConfirmPassword(value) {
     setState(() {
-      _confirmPassWord = value;
+      widget.user.confirmPassword = value;
     });
 
     // validate for equal password
-    if (_confirmPassWord == _passWord && _passWord != '') {
+    if (widget.user.confirmPassword == widget.user.password &&
+        widget.user.password != '') {
       setState(() {
         _isPassEquals = true;
       });
@@ -136,9 +148,20 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
                       }),
                 ),
                 onChanged: validatePassword,
+                initialValue: widget.user.password,
                 obscureText: _isObscurePass,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: Validators.required('Please enter password.'),
+                validator: Validators.compose([
+                  Validators.required('Required field'),
+                  Validators.minLength(8, 'Minimum of 8 Characters'),
+                  Validators.patternRegExp(
+                      RegExp(r'[A-Z]'), "A capital letter"),
+                  Validators.patternRegExp(
+                      RegExp(r'[a-z]'), "A lowercase letter"),
+                  Validators.patternRegExp(RegExp(r'[0-9]'), "A number"),
+                  Validators.patternString(
+                      "${widget.user.confirmPassword}", "Both boxes match"),
+                ]),
               ),
               SizedBox(
                 height: 6,
@@ -161,11 +184,12 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
                         });
                       }),
                 ),
-                keyboardType: TextInputType.visiblePassword,
                 onChanged: validateConfirmPassword,
+                initialValue: widget.user.confirmPassword,
                 obscureText: _isObscureConfirmPass,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: Validators.required('Please enter password.'),
+                validator: Validators.patternString(
+                    "${widget.user.password}", "Both boxes match"),
               ),
               SizedBox(
                 height: 12,
@@ -180,11 +204,17 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
         ),
         Column(
           children: [
-            ButtonWidget(
-              color: primaryColor,
-              onPressed: () => () {},
-              title: 'SIGN UP',
-              width: 400,
+            Center(
+              child: ButtonWidget(
+                color: primaryColor,
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                  }
+                },
+                title: 'SIGN UP',
+                width: MediaQuery.of(context).size.width * 0.9,
+              ),
             ),
             SizedBox(
               height: 20,

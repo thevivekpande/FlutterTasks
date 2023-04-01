@@ -9,6 +9,7 @@ import 'package:test/pages/SignupFirstPage.dart';
 import 'package:test/utils/colors.dart';
 import 'package:wc_form_validators/wc_form_validators.dart';
 
+import '../modals/User.dart';
 import '../utils/globalMethods.dart';
 import 'ButtonWidget.dart';
 
@@ -23,12 +24,7 @@ class _SignUpPageState extends State<SignUpPage> {
   int _currentStep = 1;
 
   int get currentStep => _currentStep;
-
-  updateCurrentStep() {
-    setState(() {
-      _currentStep = 2;
-    });
-  }
+  User _user = new User();
 
   void updateStep() {
     setState(() {
@@ -106,8 +102,11 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             width: double.infinity,
             child: _currentStep == 1
-                ? SignupFirstPage(isUpdated: (isUpdated) => updateStep())
-                : SignUpSecondPage(),
+                ? SignupFirstPage(
+                    isUpdated: (isUpdated) => updateStep(),
+                    user: _user,
+                  )
+                : SignUpSecondPage(user: _user),
           ),
         ],
       ),
