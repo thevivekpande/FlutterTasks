@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test/pages/gallaryPage.dart';
 import 'package:test/pages/signUpPage.dart';
 import 'package:test/utils/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wc_form_validators/wc_form_validators.dart';
 
 import 'ButtonWidget.dart';
 
@@ -18,8 +20,25 @@ class LoginApp extends StatelessWidget {
   }
 }
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  var _formKey = GlobalKey<FormState>();
+
+  bool _isObscurePass = true;
+  String _password = '';
+  String _email = '';
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void onPressed(BuildContext context, String message) {
     final snackBar = SnackBar(
       content: Text(message),
@@ -37,6 +56,37 @@ class LoginPage extends StatelessWidget {
       await launchUrl(_url);
     } catch (err) {
       onPressed(context, err.toString());
+    }
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      final sharedPreferences = await SharedPreferences.getInstance();
+      final shavedEmail = sharedPreferences.getString('email');
+      final shavedPassword = sharedPreferences.getString('password');
+      if (shavedEmail == _email && shavedPassword == _password) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) => GallaryPage(),
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Login Failed'),
+            content: Text('Incorrect email or password'),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
@@ -94,34 +144,77 @@ class LoginPage extends StatelessWidget {
                       boxShadow: kElevationToShadow[4],
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.all(Radius.circular(10.0))),
-                  child: Column(
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10.0),
-                              topRight: Radius.circular(10.0),
-                              bottomLeft: Radius.zero,
-                              bottomRight: Radius.zero,
-                            ),
-                          ),
-                          hintText: 'Email or Phone number',
-                        ),
-                      ),
-                      TextField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
                               borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(10.0),
-                            bottomRight: Radius.circular(10.0),
-                            topLeft: Radius.zero,
-                            topRight: Radius.zero,
-                          )),
-                          hintText: 'Password',
+                                topLeft: Radius.circular(10.0),
+                                topRight: Radius.circular(10.0),
+                                bottomLeft: Radius.zero,
+                                bottomRight: Radius.zero,
+                              ),
+                            ),
+                            hintText: 'Email',
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          onSaved: (value) {
+                            setState(() {
+                              _email = value!;
+                            });
+                          },
+                          textInputAction: TextInputAction.next,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: Validators.compose([
+                            Validators.required('Email is required'),
+                            Validators.email('Enter valid email'),
+                          ]),
+                          initialValue: _email,
                         ),
-                      ),
-                    ],
+                        TextFormField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(10.0),
+                              bottomRight: Radius.circular(10.0),
+                              topLeft: Radius.zero,
+                              topRight: Radius.zero,
+                            )),
+                            hintText: 'Password',
+                            suffixIcon: IconButton(
+                                icon: Icon(_isObscurePass
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscurePass = !_isObscurePass;
+                                  });
+                                }),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _password = value;
+                            });
+                          },
+                          initialValue: _password,
+                          obscureText: _isObscurePass,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          validator: Validators.compose([
+                            Validators.required('Required field'),
+                            Validators.minLength(8, 'Minimum of 8 Characters'),
+                            Validators.patternRegExp(
+                                RegExp(r'[A-Z]'), "A capital letter"),
+                            Validators.patternRegExp(
+                                RegExp(r'[a-z]'), "A lowercase letter"),
+                            Validators.patternRegExp(
+                                RegExp(r'[0-9]'), "A number"),
+                          ]),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Container(
@@ -138,11 +231,12 @@ class LoginPage extends StatelessWidget {
                       child: ButtonWidget(
                     title: 'Login',
                     color: primaryColor,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (BuildContext context) => GallaryPage(),
-                      ),
-                    ),
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        _login();
+                      }
+                    },
                     width: MediaQuery.of(context).size.width * 0.5,
                   )),
                 ),

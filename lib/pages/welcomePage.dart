@@ -16,7 +16,7 @@ class _WelcomePageState extends State<WelcomePage> {
   void initState() {
     super.initState();
     Timer(
-      Duration(seconds: 5),
+      Duration(seconds: 3),
       () => Navigator.of(context).push(
         CupertinoPageRoute(
           builder: (BuildContext context) => LoginApp(),

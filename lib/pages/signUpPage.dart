@@ -1,17 +1,13 @@
-import 'dart:isolate';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import 'package:test/pages/SignUpSecondPage.dart';
 import 'package:test/pages/SignupFirstPage.dart';
+import 'package:test/pages/login.dart';
 import 'package:test/utils/colors.dart';
-import 'package:wc_form_validators/wc_form_validators.dart';
 
 import '../modals/User.dart';
 import '../utils/globalMethods.dart';
-import 'ButtonWidget.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -22,14 +18,23 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   int _currentStep = 1;
-
-  int get currentStep => _currentStep;
   User _user = new User();
 
   void updateStep() {
     setState(() {
       _currentStep = 2;
     });
+  }
+
+  Future<void> _signup() async {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    await sharedPreferences.setString('email', _user.email);
+    await sharedPreferences.setString('gender', _user.gender);
+    await sharedPreferences.setString('hoursStudied', _user.chosenValue);
+    await sharedPreferences.setString('password', _user.password);
+    await sharedPreferences.setString('confirmPassword', _user.confirmPassword);
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
   }
 
   @override
@@ -64,7 +69,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
                 SizedBox(
-                  height: 65,
+                  height: MediaQuery.of(context).size.height * 0.08,
                 ),
                 Text(
                   'SIGN UP',
@@ -74,7 +79,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
                 SizedBox(
-                  height: 15,
+                  height: MediaQuery.of(context).size.height * 0.01,
                 ),
                 StepProgressIndicator(
                   size: 4,
@@ -82,6 +87,9 @@ class _SignUpPageState extends State<SignUpPage> {
                   currentStep: currentStep,
                   selectedColor: Colors.white,
                   unselectedColor: secondaryColor,
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.01,
                 ),
               ],
             ),
@@ -106,7 +114,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     isUpdated: (isUpdated) => updateStep(),
                     user: _user,
                   )
-                : SignUpSecondPage(user: _user),
+                : SignUpSecondPage(
+                    isSignedUp: (isSignedUp) => _signup(), user: _user),
           ),
         ],
       ),

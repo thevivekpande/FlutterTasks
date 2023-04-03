@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:test/modals/User.dart';
-import 'package:test/pages/login.dart';
 import 'package:wc_form_validators/wc_form_validators.dart';
 
 import '../utils/colors.dart';
@@ -11,9 +8,12 @@ import 'ButtonWidget.dart';
 
 class SignUpSecondPage extends StatefulWidget {
   final User user;
+  final Function(bool) isSignedUp;
+
   const SignUpSecondPage({
     super.key,
     required this.user,
+    required this.isSignedUp,
   });
 
   @override
@@ -99,6 +99,10 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
         _isPassEquals = false;
       });
     }
+  }
+
+  void onSignedUp() {
+    widget.isSignedUp(true);
   }
 
   @override
@@ -210,6 +214,7 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
+                    onSignedUp();
                   }
                 },
                 title: 'SIGN UP',
