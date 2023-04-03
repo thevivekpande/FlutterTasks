@@ -84,7 +84,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 StepProgressIndicator(
                   size: 4,
                   totalSteps: 2,
-                  currentStep: currentStep,
+                  currentStep: _currentStep,
                   selectedColor: Colors.white,
                   unselectedColor: secondaryColor,
                 ),
