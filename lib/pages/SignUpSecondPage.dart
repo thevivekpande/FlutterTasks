@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:test/blocs/bloc/login_bloc.dart';
 import 'package:test/modals/User.dart';
 import 'package:wc_form_validators/wc_form_validators.dart';
 
@@ -29,12 +31,13 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
   bool _isUpperCase = false;
   bool _isNumber = false;
   bool _isLowerCase = false;
+  String _confirmPassword = '';
 
   @override
   void initState() {
     super.initState();
     validatePassword(widget.user.password);
-    validateConfirmPassword(widget.user.confirmPassword);
+    validateConfirmPassword(_confirmPassword);
   }
 
   void validatePassword(value) {
@@ -69,7 +72,7 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
     }
 
     // validate for equal password
-    if (widget.user.confirmPassword == widget.user.password &&
+    if (_confirmPassword == widget.user.password &&
         widget.user.password != '') {
       isPassEqualFlag = true;
     }
@@ -85,11 +88,11 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
 
   void validateConfirmPassword(value) {
     setState(() {
-      widget.user.confirmPassword = value;
+      _confirmPassword = value;
     });
 
     // validate for equal password
-    if (widget.user.confirmPassword == widget.user.password &&
+    if (_confirmPassword == widget.user.password &&
         widget.user.password != '') {
       setState(() {
         _isPassEquals = true;
@@ -164,7 +167,7 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
                       RegExp(r'[a-z]'), "A lowercase letter"),
                   Validators.patternRegExp(RegExp(r'[0-9]'), "A number"),
                   Validators.patternString(
-                      "${widget.user.confirmPassword}", "Both boxes match"),
+                      "${_confirmPassword}", "Both boxes match"),
                 ]),
               ),
               SizedBox(
@@ -189,7 +192,7 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
                       }),
                 ),
                 onChanged: validateConfirmPassword,
-                initialValue: widget.user.confirmPassword,
+                initialValue: _confirmPassword,
                 obscureText: _isObscureConfirmPass,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: Validators.patternString(
@@ -214,6 +217,7 @@ class _SignUpSecondPageState extends State<SignUpSecondPage> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
+                    context.read<LoginBloc>().add(AddUser(user: widget.user));
                     onSignedUp();
                   }
                 },

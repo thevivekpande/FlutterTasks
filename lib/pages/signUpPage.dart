@@ -7,7 +7,6 @@ import 'package:test/pages/login.dart';
 import 'package:test/utils/colors.dart';
 
 import '../modals/User.dart';
-import '../utils/globalMethods.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -32,7 +31,6 @@ class _SignUpPageState extends State<SignUpPage> {
     await sharedPreferences.setString('gender', _user.gender);
     await sharedPreferences.setString('hoursStudied', _user.chosenValue);
     await sharedPreferences.setString('password', _user.password);
-    await sharedPreferences.setString('confirmPassword', _user.confirmPassword);
     Navigator.of(context).push(
         MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
   }

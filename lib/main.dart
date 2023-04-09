@@ -1,12 +1,17 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:test/pages/gallaryPage.dart';
-import 'package:http/http.dart' as http;
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:test/pages/welcomePage.dart';
 
-void main() {
-  runApp(LoginApp());
+import 'blocs/bloc/login_bloc.dart';
+import 'blocs/bloc_exports.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: await getTemporaryDirectory(),
+  );
+  runApp(const MyApp());
 }
 
 class LoginApp extends StatelessWidget {
@@ -14,7 +19,7 @@ class LoginApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: WelcomePage(),
     );
@@ -26,9 +31,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginApp(),
+    return BlocProvider(
+      create: (context) => LoginBloc(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: LoginApp(),
+      ),
     );
   }
 }
